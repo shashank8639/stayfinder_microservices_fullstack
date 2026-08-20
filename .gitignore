@@ -1,0 +1,17 @@
+target/
+.idea/
+.vscode/
+*.iml
+node_modules/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+.classpath
+.project
+.settings/
+*.swp
+hs_err_pid*
+replay_pid*
+.mvn/timing.properties
