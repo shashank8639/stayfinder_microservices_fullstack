@@ -1,6 +1,6 @@
 # Phase 1 Interview Notes — Eureka + API Gateway
 
-Use this file to study without Cursor. After Phase 1 you should be able to draw and explain the two processes, the two ports, and what 503 means.
+After Phase 1 you should be able to draw and explain the two processes, the two ports, and what 503 means.
 
 ---
 
