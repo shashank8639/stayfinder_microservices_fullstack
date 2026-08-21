@@ -1,0 +1,59 @@
+### Phase 2 — Auth + JWT through the Gateway
+
+### Auth health via Gateway (no JWT)
+GET http://localhost:8080/api/auth/health
+
+### JWKS public keys (Gateway may call Auth directly on 8081)
+GET http://localhost:8081/api/auth/.well-known/jwks.json
+
+### Register (always becomes CUSTOMER — clients cannot self-assign ADMIN)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "learner@stayfinder.local",
+  "password": "Password@123"
+}
+
+### Login as seeded customer
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@stayfinder.local",
+  "password": "Customer@123"
+}
+
+### Login as seeded admin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@stayfinder.local",
+  "password": "Admin@123"
+}
+
+### Current user (replace TOKEN)
+GET http://localhost:8080/api/auth/me
+Authorization: Bearer TOKEN
+
+### Customer token against admin endpoint — expect 403
+GET http://localhost:8080/api/auth/admin-check
+Authorization: Bearer CUSTOMER_TOKEN
+
+### Admin token against admin endpoint — expect 200
+GET http://localhost:8080/api/auth/admin-check
+Authorization: Bearer ADMIN_TOKEN
+
+### Missing JWT against /me — expect 401
+GET http://localhost:8080/api/auth/me
+
+### Public catalog path, booking-service not running — expect 503 even without JWT
+GET http://localhost:8080/api/bookings/hotels
+
+### Protected booking write, booking-service not running — expect 503 with a valid JWT
+POST http://localhost:8080/api/bookings
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{}
