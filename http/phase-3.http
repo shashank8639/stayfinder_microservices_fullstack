@@ -1,0 +1,51 @@
+### Phase 3 — Booking through the Gateway
+
+### Public catalog (no JWT)
+GET http://localhost:8080/api/bookings/hotels
+
+### Rooms for hotel 1
+GET http://localhost:8080/api/bookings/hotels/1/rooms
+
+### Availability
+GET http://localhost:8080/api/bookings/rooms/1/availability?checkIn=2026-09-10&checkOut=2026-09-12
+
+### Create booking (CUSTOMER token)
+POST http://localhost:8080/api/bookings
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "roomId": 1,
+  "checkIn": "2026-09-10",
+  "checkOut": "2026-09-12"
+}
+
+### My bookings
+GET http://localhost:8080/api/bookings/my
+Authorization: Bearer TOKEN
+
+### Confirm booking
+POST http://localhost:8080/api/bookings/1/confirm
+Authorization: Bearer TOKEN
+
+### Mock payment confirm
+POST http://localhost:8080/api/bookings/1/payment/confirm
+Authorization: Bearer TOKEN
+
+### Cancel booking (frees the dates)
+POST http://localhost:8080/api/bookings/1/cancel
+Authorization: Bearer TOKEN
+
+### Admin: hotel bookings
+GET http://localhost:8080/api/bookings/hotel/1
+Authorization: Bearer ADMIN_TOKEN
+
+### Customer creating a hotel — expect 403
+POST http://localhost:8080/api/bookings/hotels
+Authorization: Bearer CUSTOMER_TOKEN
+Content-Type: application/json
+
+{
+  "name": "Should Fail",
+  "city": "Hyderabad"
+}
