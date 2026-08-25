@@ -27,6 +27,7 @@
         <module>api-gateway</module>
         <module>auth-service</module>
         <module>booking-service</module>
+        <module>food-service</module>
     </modules>
 
     <properties>

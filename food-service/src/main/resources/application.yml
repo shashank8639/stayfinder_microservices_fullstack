@@ -1,0 +1,100 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: food-service
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/stayfinder_food?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${STAYFINDER_JWK_SET_URI:http://localhost:8081/api/auth/.well-known/jwks.json}
+  cloud:
+    openfeign:
+      client:
+        config:
+          booking-service:
+            connectTimeout: 2000
+            readTimeout: 3000
+            loggerLevel: BASIC
+      circuitbreaker:
+        enabled: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:true}
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+  health:
+    kafka:
+      enabled: false
+    circuitbreakers:
+      enabled: true
+
+resilience4j:
+  retry:
+    retry-aspect-order: 2
+    instances:
+      bookingService:
+        max-attempts: 3
+        wait-duration: 200ms
+        retry-exceptions:
+          - feign.FeignException
+          - feign.RetryableException
+          - java.io.IOException
+  circuitbreaker:
+    circuit-breaker-aspect-order: 1
+    instances:
+      bookingService:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 8
+        minimum-number-of-calls: 4
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+
+stayfinder:
+  food:
+    seed-demo-data: true
+
+logging:
+  level:
+    com.stayfinder.food: INFO
+    com.stayfinder.food.client.BookingClient: DEBUG
+    io.github.resilience4j: INFO
