@@ -1,23 +1,24 @@
-# StayFinder — Day 3: Booking Service
+# StayFinder — Day 3: Booking, then Food + OpenFeign
 
 Java 21 · Spring Boot 3.5.4 · Spring Cloud 2025.0.3 · MySQL
 
-StayFinder is a hotel booking and in-room dining platform. **This commit series is Day 3:** hotels, rooms, bookings, overlap detection, and JWT checks inside Booking. Food, Kafka consumer, Docker Compose, and React are not in this tree yet.
+StayFinder is a hotel booking and in-room dining platform. **This commit series is still Day 3:** first Booking (hotels, overlap, 409), then Food so in-room dining can check a **CONFIRMED** stay over HTTP. Kafka consumer, Docker Compose, and React are not in this tree yet.
 
-## What Day 3 proves
+## What this day proves
 
-A client still talks to **one URL**: `http://localhost:8080`. Public hotel catalog needs no JWT. Creating a booking needs a CUSTOMER token. Booking Service owns MySQL database `stayfinder_booking` and does **not** query Auth's tables. The booking row stores `userId` copied from the JWT `sub` claim.
+A client still talks to **one URL**: `http://localhost:8080`.
 
-Overlapping **non-cancelled** bookings return **409**. The room row is locked (`PESSIMISTIC_WRITE`) while inserting so two requests cannot double-book in the same window.
+**Booking** owns `stayfinder_booking`. Overlapping non-cancelled bookings return **409**. Catalog GETs need no JWT.
+
+**Food** owns `stayfinder_food`. It does **not** query Booking's database. Before placing an order it calls Booking with **OpenFeign**, forwarding the same JWT. The stay must be **CONFIRMED**. If Booking is down, Food returns **503** (fail-closed).
 
 ```text
-GET /api/bookings/hotels          → 200, no JWT
-POST /api/bookings                → 401 without JWT, 201 PENDING with CUSTOMER JWT
-POST /api/bookings (overlap)      → 409
-POST /api/bookings/hotels         → 403 with CUSTOMER JWT
+POST /api/bookings     → PENDING → confirm → CONFIRMED
+POST /api/food/orders  → Feign GET /api/bookings/{id}  → 201 if CONFIRMED
+                         Booking down                 → 503
 ```
 
-Payment confirm is **mock**: it only sets status `CONFIRMED`. There is no Stripe or Razorpay.
+Payment confirm is **mock**. There is no Stripe or Razorpay.
 
 ## Modules
 
@@ -27,14 +28,7 @@ Payment confirm is **mock**: it only sets status `CONFIRMED`. There is no Stripe
 | `api-gateway` | 8080 | Only public HTTP entry |
 | `auth-service` | 8081 | Users, RSA JWT, JWKS |
 | `booking-service` | 8082 | Hotels, rooms, bookings |
-
-## Demo catalog (seeded on Booking startup)
-
-| Hotel | City |
-| --- | --- |
-| Grand Horizon | Hyderabad |
-| Creek Palace | Dubai |
-| Fort View | Jaipur |
+| `food-service` | 8083 | Menu, orders, Feign to Booking |
 
 ## Demo users (Auth)
 
@@ -46,39 +40,28 @@ Payment confirm is **mock**: it only sets status `CONFIRMED`. There is no Stripe
 
 ## Run locally
 
-MySQL must be running on `127.0.0.1:3306`. Set `MYSQL_PASSWORD` in the shell if needed. Do not commit `.env`.
+MySQL must be running on `127.0.0.1:3306`. Start Eureka, Auth, Booking, Food, then Gateway.
 
 ```bash
 export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
 export PATH="$JAVA_HOME/bin:$PATH"
 
-# Terminal 1
 cd eureka-server && mvn spring-boot:run
-
-# Terminal 2
 cd auth-service && mvn spring-boot:run
-
-# Terminal 3
 cd booking-service && mvn spring-boot:run
-
-# Terminal 4
+cd food-service && mvn spring-boot:run
 cd api-gateway && mvn spring-boot:run
 ```
 
-- Eureka dashboard: http://localhost:8761 — you should see `API-GATEWAY`, `AUTH-SERVICE`, `BOOKING-SERVICE`
 - Public catalog: `curl -s http://localhost:8080/api/bookings/hotels`
-- Expected 401: `curl -i -X POST http://localhost:8080/api/bookings -H 'Content-Type: application/json' -d '{"roomId":1,"checkIn":"2026-09-10","checkOut":"2026-09-12"}'`
-
-More requests: [http/phase-3.http](http/phase-3.http)
+- Public menu: `curl -s http://localhost:8080/api/food/hotels/1/menu`
+- Book + confirm first, then place a food order (see [http/phase-3.http](http/phase-3.http) and [http/phase-4.http](http/phase-4.http))
 
 ## Docs
 
-- [Architecture](docs/architecture/phase-3-booking-service.md)
-- [Sequence diagrams](docs/sequence-diagrams/phase-3-booking-flow.md)
-- [Interview notes](docs/interview-notes/phase-3-booking-service.md)
-- Day 2: [Auth + JWT](docs/architecture/phase-2-auth-jwt.md)
-- Day 1: [Eureka + Gateway](docs/architecture/phase-1-eureka-gateway.md)
+- Booking: [architecture](docs/architecture/phase-3-booking-service.md) · [interview](docs/interview-notes/phase-3-booking-service.md)
+- Food + Feign: [architecture](docs/architecture/phase-4-food-feign.md) · [interview](docs/interview-notes/phase-4-food-feign.md) · [sequence](docs/sequence-diagrams/phase-4-feign-flow.md)
 
-## Later days (not in this repo yet)
+## Later (not in this repo yet)
 
-Food + Feign, Kafka notifications, Resilience4j, Docker Compose, React.
+Kafka notifications, Docker Compose, React.

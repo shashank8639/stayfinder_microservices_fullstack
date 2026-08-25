@@ -1,0 +1,46 @@
+### Phase 4 — Food + Feign through the Gateway
+
+### Public menu (no JWT)
+GET http://localhost:8080/api/food/hotels/1/menu
+
+### Place order (CUSTOMER token, booking must be CONFIRMED)
+POST http://localhost:8080/api/food/orders
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "bookingId": 1,
+  "roomNumber": "101",
+  "items": [
+    { "menuItemId": 1, "quantity": 1 }
+  ]
+}
+
+### My orders
+GET http://localhost:8080/api/food/orders/my
+Authorization: Bearer TOKEN
+
+### Admin update status
+PUT http://localhost:8080/api/food/orders/1/status
+Authorization: Bearer ADMIN_TOKEN
+Content-Type: application/json
+
+{
+  "status": "PREPARING"
+}
+
+### Admin hotel orders
+GET http://localhost:8080/api/food/hotel/1/orders
+Authorization: Bearer ADMIN_TOKEN
+
+### Customer creating menu — expect 403
+POST http://localhost:8080/api/food/menu
+Authorization: Bearer CUSTOMER_TOKEN
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "name": "Should Fail",
+  "price": 10
+}
