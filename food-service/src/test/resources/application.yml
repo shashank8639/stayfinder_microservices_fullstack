@@ -1,0 +1,52 @@
+eureka:
+  client:
+    enabled: false
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+  cloud:
+    discovery:
+      enabled: false
+  datasource:
+    url: jdbc:h2:mem:stayfinder_food;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE,USER
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9999/jwks
+
+stayfinder:
+  food:
+    seed-demo-data: false
+
+resilience4j:
+  retry:
+    retry-aspect-order: 2
+    instances:
+      bookingService:
+        max-attempts: 1
+        wait-duration: 1ms
+        retry-exceptions:
+          - feign.FeignException
+          - feign.RetryableException
+          - java.io.IOException
+  circuitbreaker:
+    circuit-breaker-aspect-order: 1
+    instances:
+      bookingService:
+        sliding-window-size: 50
+        minimum-number-of-calls: 50
+        failure-rate-threshold: 100
+        wait-duration-in-open-state: 1s
+
