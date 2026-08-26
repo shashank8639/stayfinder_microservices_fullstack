@@ -8,3 +8,4 @@ Study each phase until you can explain it without the code open.
 | 2 | Auth + JWT | [phase-2-auth-jwt.md](phase-2-auth-jwt.md) |
 | 3 | Booking Service | [phase-3-booking-service.md](phase-3-booking-service.md) |
 | 4 | Food + OpenFeign | [phase-4-food-feign.md](phase-4-food-feign.md) |
+| 5 | Kafka notifications | [phase-5-kafka.md](phase-5-kafka.md) |

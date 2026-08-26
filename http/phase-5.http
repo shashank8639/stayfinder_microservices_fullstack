@@ -1,0 +1,42 @@
+### Phase 5 — Kafka notifications
+
+There is no Notification HTTP API on the Gateway. Confirm a booking / place an order, then watch **notification-service** logs for:
+
+`Email notification sent to customer ...`
+
+Start Kafka first:
+
+```bash
+docker compose -f docker-compose.kafka.yml up -d
+```
+
+### Confirm booking (CUSTOMER token) — publishes stayfinder.booking-confirmed
+POST http://localhost:8080/api/bookings/1/confirm
+Authorization: Bearer TOKEN
+
+### Mock payment confirm — same event
+POST http://localhost:8080/api/bookings/1/payment/confirm
+Authorization: Bearer TOKEN
+
+### Place food order (booking must already be CONFIRMED) — publishes stayfinder.food-order-placed
+POST http://localhost:8080/api/food/orders
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "bookingId": 1,
+  "roomNumber": "101",
+  "items": [
+    { "menuItemId": 1, "quantity": 1 }
+  ]
+}
+
+### Notification has no public business API
+GET http://localhost:8084/actuator/health
+
+GET http://localhost:8084/api/notifications
+# expect 403
+
+GET http://localhost:8080/api/notifications
+# expect 404 at Gateway — no route
