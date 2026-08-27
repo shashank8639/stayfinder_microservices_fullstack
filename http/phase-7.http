@@ -1,0 +1,32 @@
+### Phase 7 — Docker Compose health (no JWT)
+
+# Full stack must be up: ./scripts/compose-up.sh
+# Browser still uses localhost. Containers talk over Docker DNS.
+
+GET http://localhost:8080/actuator/health
+
+GET http://localhost:8761/actuator/health
+
+GET http://localhost:8081/actuator/health
+
+GET http://localhost:8082/actuator/health
+
+GET http://localhost:8083/actuator/health
+
+GET http://localhost:8084/actuator/health
+
+### Public catalog through Gateway (same as host JVM)
+GET http://localhost:8080/api/bookings/hotels
+
+### Login (demo seeder)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@stayfinder.local",
+  "password": "Customer@123"
+}
+
+### Eureka dashboard (open in a browser)
+# http://localhost:8761
+# Instances should show hostnames auth-service, booking-service, ... not localhost
