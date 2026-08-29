@@ -1,48 +1,44 @@
-# StayFinder — Day 5: Docker Compose
+# StayFinder — Day 6: React on the Gateway
 
-Java 21 · Spring Boot 3.5.4 · Spring Cloud 2025.0.3 · MySQL · Kafka · Docker Compose
+Java 21 · Spring Boot 3.5.4 · Spring Cloud 2025.0.3 · MySQL · Kafka · Docker Compose · React (Vite)
 
-StayFinder is a hotel booking and in-room dining platform. **This commit series is Day 5:** the same six Spring apps, plus MySQL and Kafka, start as one stack. The browser still uses `http://localhost:8080`. Inside Docker, services use **DNS names**, not `localhost`. React is not in this tree yet.
+StayFinder is a hotel booking and in-room dining platform. **This commit series is Day 6:** a Vite React app on `:5173` that calls **only** `http://localhost:8080`. It never uses Auth `:8081`, Booking `:8082`, Food `:8083`, Eureka, or Kafka.
 
-## What Day 5 proves
+## What Day 6 proves
 
-`localhost` inside a container is **that container**. Compose sets:
+```text
+React :5173
+        │
+        ▼  VITE_API_BASE_URL=http://localhost:8080
+API Gateway :8080
+        │
+        ▼  lb:// via Eureka
+Auth / Booking / Food
+```
 
-| Need | Host JVM | Compose |
+`ProtectedRoute` only hides pages. JWT is still checked at the Gateway and in each service. The token is in `localStorage` for this demo (XSS-vulnerable; production would use httpOnly cookies).
+
+## Run
+
+Start the backend (Compose or `mvn spring-boot:run`), then:
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Open http://localhost:5173
+
+| Email | Password | Role |
 | --- | --- | --- |
-| Eureka | `localhost:8761` | `eureka-server:8761` |
-| JWKS | `localhost:8081` | `auth-service:8081` |
-| Kafka | `localhost:9092` | `kafka:29092` |
-| MySQL | `127.0.0.1:3306` | `mysql:3306` (host publish **3307**) |
-
-There is **no Config Server**. Env vars in `docker-compose.yml` are the config. One MySQL process, three databases (`stayfinder_auth`, `stayfinder_booking`, `stayfinder_food`) — logical database-per-service for the demo.
-
-Do not run `docker-compose.yml` and `docker-compose.kafka.yml` at the same time (both use 9092).
-
-## Run the stack
-
-```bash
-export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
-export PATH="$JAVA_HOME/bin:$PATH"
-
-./scripts/compose-up.sh
-```
-
-- Gateway: http://localhost:8080
-- Eureka: http://localhost:8761 — instances should show `auth-service`, `booking-service`, not `localhost`
-- Health: [http/phase-7.http](http/phase-7.http)
-
-```bash
-docker compose down        # stop
-docker compose down -v     # stop and wipe MySQL volume
-```
+| `customer@stayfinder.local` | `Customer@123` | Guest |
+| `admin@stayfinder.local` | `Admin@123` | Staff |
 
 ## Docs
 
-- [Architecture](docs/architecture/phase-7-docker-compose.md)
-- [Sequence](docs/sequence-diagrams/phase-7-compose-startup.md)
-- [Interview notes](docs/interview-notes/phase-7-docker-compose.md)
-
-## Later (not in this repo yet)
-
-React UI (talks only to Gateway `:8080`).
+- [Architecture](docs/architecture/phase-9-react.md)
+- [Sequence](docs/sequence-diagrams/phase-9-react-flow.md)
+- [Interview notes](docs/interview-notes/phase-9-react.md)
+- Frontend: [frontend/README.md](frontend/README.md)

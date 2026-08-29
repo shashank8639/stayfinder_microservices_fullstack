@@ -10,3 +10,4 @@ Study each phase until you can explain it without the code open.
 | 4 | Food + OpenFeign | [phase-4-food-feign.md](phase-4-food-feign.md) |
 | 5 | Kafka notifications | [phase-5-kafka.md](phase-5-kafka.md) |
 | 7 | Docker Compose | [phase-7-docker-compose.md](phase-7-docker-compose.md) |
+| 9 | React + Gateway | [phase-9-react.md](phase-9-react.md) |
