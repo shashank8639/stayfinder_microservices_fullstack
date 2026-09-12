@@ -1,0 +1,41 @@
+### Phase 6 — Resilience4j (Food → Booking)
+
+Fallback is **503**, not a fake booking. Watch **food-service** logs for retries and `Booking circuit CLOSED -> OPEN`.
+
+### Circuit state (no JWT required)
+GET http://localhost:8083/actuator/circuitbreakers
+
+GET http://localhost:8083/actuator/health
+
+### Place order while Booking is up — 201
+POST http://localhost:8080/api/food/orders
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "bookingId": 1,
+  "roomNumber": "101",
+  "items": [
+    { "menuItemId": 1, "quantity": 1 }
+  ]
+}
+
+### Demo: stop booking-service, then place several orders
+# Expect 503, retry logs, then circuit OPEN (Feign skipped)
+POST http://localhost:8080/api/food/orders
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "bookingId": 1,
+  "roomNumber": "101",
+  "items": [
+    { "menuItemId": 1, "quantity": 1 }
+  ]
+}
+
+### Missing booking still 404 (must not open the circuit)
+GET http://localhost:8080/api/bookings/999999
+Authorization: Bearer TOKEN
