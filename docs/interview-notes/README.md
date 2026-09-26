@@ -11,4 +11,6 @@ Study each phase until you can explain it without the code open.
 | 5 | Kafka notifications | [phase-5-kafka.md](phase-5-kafka.md) |
 | 6 | Resilience4j | [phase-6-resilience4j.md](phase-6-resilience4j.md) |
 | 7 | Docker Compose | [phase-7-docker-compose.md](phase-7-docker-compose.md) |
+| 8 | End-to-end walkthrough | [phase-8-walkthrough.md](phase-8-walkthrough.md) |
+| 8 | Question bank | [phase-8-question-bank.md](phase-8-question-bank.md) |
 | 9 | React + Gateway | [phase-9-react.md](phase-9-react.md) |

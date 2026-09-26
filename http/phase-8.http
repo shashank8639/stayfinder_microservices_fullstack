@@ -1,0 +1,79 @@
+### Phase 8 — Interview demo (Gateway :8080)
+
+# 1) Public catalog
+GET http://localhost:8080/api/bookings/hotels
+
+# 2) Login (seeded customer)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@stayfinder.local",
+  "password": "Customer@123"
+}
+
+# 3) My bookings without token — 401
+GET http://localhost:8080/api/bookings/my
+
+# 4) Create PENDING booking (paste accessToken)
+POST http://localhost:8080/api/bookings
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "roomId": 1,
+  "checkIn": "2026-10-10",
+  "checkOut": "2026-10-12"
+}
+
+# 5) Food against PENDING — 400 (needs CONFIRMED)
+POST http://localhost:8080/api/food/orders
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "bookingId": 1,
+  "roomNumber": "101",
+  "items": [{ "menuItemId": 1, "quantity": 1 }]
+}
+
+# 6) Confirm — 200, then Notification log + Kafka
+POST http://localhost:8080/api/bookings/1/confirm
+Authorization: Bearer TOKEN
+
+# 7) Food against CONFIRMED — 201
+POST http://localhost:8080/api/food/orders
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "bookingId": 1,
+  "roomNumber": "101",
+  "items": [{ "menuItemId": 1, "quantity": 1 }]
+}
+
+# 8) Overlap — 409 (same room/dates)
+POST http://localhost:8080/api/bookings
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "roomId": 1,
+  "checkIn": "2026-10-10",
+  "checkOut": "2026-10-12"
+}
+
+# 9) Customer creating a hotel — 403
+POST http://localhost:8080/api/bookings/hotels
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "name": "Should Fail",
+  "city": "Hyderabad"
+}
+
+# 10) Circuit demo: stop booking-service, repeat food POST, then:
+GET http://localhost:8083/actuator/circuitbreakers

@@ -1,0 +1,30 @@
+### Phase 1 — Eureka + API Gateway
+
+### Eureka dashboard (open this URL in a browser)
+GET http://localhost:8761
+
+### Eureka registered applications (XML is the reliable Eureka payload)
+GET http://localhost:8761/eureka/apps
+Accept: application/xml
+
+### Eureka registered applications (JSON, single app)
+GET http://localhost:8761/eureka/apps/API-GATEWAY
+Accept: application/json
+
+### Eureka health
+GET http://localhost:8761/actuator/health
+
+### Gateway health
+GET http://localhost:8080/actuator/health
+
+### Gateway configured routes
+GET http://localhost:8080/actuator/gateway/routes
+
+### Expected until booking-service exists: 503 SERVICE_UNAVAILABLE
+GET http://localhost:8080/api/bookings/hotels
+
+### Expected until auth-service exists: 503 SERVICE_UNAVAILABLE
+GET http://localhost:8080/api/auth/health
+
+### Expected until food-service exists: 503 SERVICE_UNAVAILABLE
+GET http://localhost:8080/api/food/hotels/1/menu
